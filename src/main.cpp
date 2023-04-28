@@ -5,23 +5,14 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    CommandLineParser test;
-    Options option;
-    Options option2;
-    option.setOption("-o");
-    Arguments optionarg;
-    optionarg.setName("test");
-    option.addArgument(optionarg);
-    test.addOption(option);
+    try {
+        CommandLineParser parser(argc, argv, "-o[2]-ff[0]");
+    } 
+    catch (const invalid_argument e) {
+        cout << e.what() << endl;
+        exit(1);
+    }
 
-    option2.setOption("-r");
-    Arguments option2arg;
-    option2arg.setName("test2");
-    option2.addArgument(option2arg);
-    test.addOption(option2);
-
-    cout << argv[0] << endl;
-    test.parse(argc, argv);
-    test.debugDisplay();
-    return 1;
+    
+    return 0;
 }
