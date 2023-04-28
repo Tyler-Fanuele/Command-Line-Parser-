@@ -14,9 +14,9 @@ CommandLineParser::CommandLineParser(int argc, char** argv, string fOptions) {
     findOptions(fOptions);
 
     // Debug message
-    for (auto each : _options) {
-        cout << "Option name: " << each.first << " Amount of args: " << each.second.getNumArgs() << endl;
-    }
+    //for (auto each : _options) {
+    //    cout << "Option name: " << each.first << " Amount of args: " << each.second.getNumArgs() << endl;
+    //}
 
     string temp;
     for (int i = 1; i < argc; i++) {
@@ -28,11 +28,8 @@ CommandLineParser::CommandLineParser(int argc, char** argv, string fOptions) {
     std::regex match_str("^(-[\\w]+([\\w ])*)*$");
     std::smatch base_match;
 
-    if (std::regex_match(temp, base_match, match_str)) {
-        cout << "match" << endl;
-    }
-    else {
-        throw std::invalid_argument("CommandLineParser - input arguments: (" + temp + ") are formatted wrong");
+    if (!std::regex_match(temp, base_match, match_str)) {
+        throw invalid_commandline_format("string '" + temp + "' is formatted wrong");
     }
 
     vector<string> command_line_args = parseCommandLineArgs(temp);
@@ -45,21 +42,26 @@ CommandLineParser::CommandLineParser(int argc, char** argv, string fOptions) {
         while (getline(temp_stream, temp, ' ')) {
             arg_pieces.push_back(temp);
         }
-        for (auto e : arg_pieces) {
-            cout << e << " | ";
-        }
-        cout << endl << "vector size = " << arg_pieces.size() << endl;
+        //for (auto e : arg_pieces) {
+        //    cout << e << " | ";
+        //}
+        //cout << endl << "vector size = " << arg_pieces.size() << endl;
 
         if (_options.find(arg_pieces[0]) != _options.end()) {
             if ((arg_pieces.size() - 1) == _options[arg_pieces[0]].getNumArgs()) {
-                cout << arg_pieces[0] << " found with enough args" << endl;
+                //cout << arg_pieces[0] << " found with " << arg_pieces.size() << " args" << endl;
+                for (int i = 1; i < arg_pieces.size(); i++) {
+                    //cout << "   pushing " + arg_pieces[i] << endl;
+                    _options[arg_pieces[0]].push_arg(arg_pieces[i]);
+                }
             }
             else {
-                cout << arg_pieces[0] << " did not have enough args" << endl;
+                throw invalid_commandline_arg_count("argument '" + arg_pieces[0] + "' does not have " 
+                                                    + std::to_string(_options[arg_pieces[0]].getNumArgs()) + " args");
             }
         }
         else {
-            cout << arg_pieces[0] << " not found in map" << endl;
+            throw invalid_commandline_arg("argument '" + arg_pieces[0] + "' not found in map");
         }
 
     }
