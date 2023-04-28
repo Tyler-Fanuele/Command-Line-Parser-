@@ -5,62 +5,68 @@
     string of options to parse the command line arguments and store their 
     arguments.
 
-    step 1: parse the formatted option string and split it by the '-' token
-    step 2: remove the empty string at the begining if you have options
-    step 3: 
-
 */
 CommandLineParser::CommandLineParser(int argc, char** argv, string fOptions) {
-    findOptions(fOptions);
+    // Parse the fOptions string for options to look for 
+    try {
+        findOptions(fOptions);
+    }
+    catch (const invalid_option_format e) {
+        cout << e.what() << endl;
+        exit(-1);
+    }
 
-    // Debug message
-    //for (auto each : _options) {
-    //    cout << "Option name: " << each.first << " Amount of args: " << each.second.getNumArgs() << endl;
-    //}
-
+    // combine args back into string
     string temp;
     for (int i = 1; i < argc; i++) {
         temp = temp + argv[i] + " ";
     }    
+    // remove final space char
     temp.pop_back();
-    //cout << "|" << temp << "|" << endl;
 
-    std::regex match_str("^(-[\\w]+([\\w ])*)*$");
+    // Check if the given command line args are formatted right
+    std::regex match_str("^(-[\\w]+([\\w .])*)*$");
     std::smatch base_match;
 
+    // If not formatted correct, throw exception
     if (!std::regex_match(temp, base_match, match_str)) {
         throw invalid_commandline_format("string '" + temp + "' is formatted wrong");
     }
 
+    // Grab list of command line options and their args and put them in vector
     vector<string> command_line_args = parseCommandLineArgs(temp);
 
+    // parse through the options and seporate the args
+    // Make sure the arg is in map and if it is check
+    // that it has the expected amount of args
     for (auto each : command_line_args) {
         string temp;
         stringstream temp_stream(each);
         vector<string> arg_pieces;
 
+        // split option and args by spaces
         while (getline(temp_stream, temp, ' ')) {
             arg_pieces.push_back(temp);
         }
-        //for (auto e : arg_pieces) {
-        //    cout << e << " | ";
-        //}
-        //cout << endl << "vector size = " << arg_pieces.size() << endl;
 
+        // check if option is in map
         if (_options.find(arg_pieces[0]) != _options.end()) {
+            // Option is in map
             if ((arg_pieces.size() - 1) == _options[arg_pieces[0]].getNumArgs()) {
-                //cout << arg_pieces[0] << " found with " << arg_pieces.size() << " args" << endl;
+                _options[arg_pieces[0]].setSeen();
+                // option has expected amount of args
                 for (int i = 1; i < arg_pieces.size(); i++) {
-                    //cout << "   pushing " + arg_pieces[i] << endl;
                     _options[arg_pieces[0]].push_arg(arg_pieces[i]);
                 }
             }
             else {
+                // option does not have expected amount of args
                 throw invalid_commandline_arg_count("argument '" + arg_pieces[0] + "' does not have " 
                                                     + std::to_string(_options[arg_pieces[0]].getNumArgs()) + " args");
             }
         }
         else {
+            // option is not in map
             throw invalid_commandline_arg("argument '" + arg_pieces[0] + "' not found in map");
         }
 
@@ -70,8 +76,13 @@ CommandLineParser::CommandLineParser(int argc, char** argv, string fOptions) {
 
 void CommandLineParser::findOptions(string fOptions) {
 
-    std::regex options_test("^(-([\\w]\\[[\\d]+\\])+)+$");
+    std::regex options_test("^(-([\\w]+\\[[\\d]+\\])+)+$");
+    std::smatch base_match;
 
+    // If not formatted correct, throw exception
+    if (!std::regex_match(fOptions, base_match, options_test)) {
+        throw invalid_option_format("user format string '" + fOptions + "' is formatted wrong");
+    }
 
     // Vars for splitting the options string
     string temp;

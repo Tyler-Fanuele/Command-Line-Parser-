@@ -6,9 +6,16 @@ using namespace std;
 int main(int argc, char** argv)
 {
     try {
-        CommandLineParser parser(argc, argv, "-o[2]-ff[0]");
-        if (parser.seen("o")) {
+        CommandLineParser parser(argc, argv, "-help[0]-o[1]");
+        if (parser.seen("help")) {
             cout << "parser seen -o" << endl;
+            std::vector<string> args = parser.optionContents("help");
+            for (auto each : args) {
+                cout << "   arg: " << each << endl;
+            }
+        }
+        if (parser.seen("o")) {
+            cout << "parser seen -help" << endl;
             std::vector<string> args = parser.optionContents("o");
             for (auto each : args) {
                 cout << "   arg: " << each << endl;

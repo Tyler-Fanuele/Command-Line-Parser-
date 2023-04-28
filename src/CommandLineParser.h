@@ -18,18 +18,22 @@ class CommandLineOption {
 
     std::vector<string> getArgs() {return args;}
 
+    void setSeen() { _seen = true; }
+    bool getSeen() { return _seen; }
+
     void push_arg(string arg) { args.push_back(arg); }
     
     private:
     int _numArgs;
     std::vector<string> args;
+    bool _seen = false;
 };
 
 class CommandLineParser {
     public:
     CommandLineParser(int argc, char** argv, string fOptions);
 
-    bool seen(string option) { return _options.find(option) != _options.end(); }
+    bool seen(string option) { return _options.at(option).getSeen(); }
     std::vector<string> optionContents(string option) {return _options.at(option).getArgs(); }
 
     private:
@@ -63,5 +67,14 @@ class invalid_commandline_arg_count{
     invalid_commandline_arg_count(string message) : msg(message) {}
     const string what () const{
         return "invalid command line argumemnt count - " + msg;
+    }
+};
+
+class invalid_option_format{
+    string msg;
+    public:
+    invalid_option_format(string message) : msg(message) {}
+    const string what () const{
+        return "invalid option format" + msg;
     }
 };
